@@ -3,7 +3,7 @@ ZZT and Super ZZT world editor
 
 This is the MIT-licensed release of zedit2 - past versions can be obtained from https://zedit2.skyend.net/
 
-The code is licensed under MIT. The font (Px437_IBM_EGA8.ttf) is licensed user CC-BY-SA and is (c) VileR.
+The code is licensed under MIT. The font (Px437_IBM_EGA8.ttf) is licensed under CC-BY-SA and is (c) VileR.
 
 This is an [IntelliJ IDEA](https://www.jetbrains.com/idea/) project and requires a JDK version of at least 11 (the project is configured to use [Amazon Corretto 11](https://docs.aws.amazon.com/corretto/latest/corretto-11-ug/downloads-list.html) but any JDK 11 should do.)
 
