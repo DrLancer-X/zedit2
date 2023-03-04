@@ -1,0 +1,1206 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+    <style>
+        body {
+            font-family: sans-serif;
+        }
+    </style>
+</head>
+<body>
+
+<center><font size="7"><b>Zedit2: GUI-based (Super) ZZT Editor</b></font></center>
+<center><font size="5">Created by
+    <span color="#FF0000">M</span><span color="#DD0011">a</span><span color="#BB0022">h</span><span color="#990033">o</span><span color="#770044">u</span>
+    <span color="#550055">S</span><span color="#330066">h</span><span color="#110077">o</span><span color="#000088">u</span><span color="#000099">j</span><span color="#0000AA">o</span>
+    <span color="#0000BB">☆</span>
+    <span color="#0000CC">M</span><span color="#0000CC">a</span><span color="#0000BB">g</span><span color="#0000AA">i</span><span color="#000099">c</span><span color="#000088">a</span><span color="#110077">l</span>
+    <span color="#330066">M</span><span color="#550055">o</span><span color="#770044">e</span><span color="#990033">s</span><span color="#BB0022">t</span><span color="#DD0011">a</span><span color="#FF0000">r</span>
+</font></center>
+<br>
+<center>CP437 font (Px437_IBM_EGA8.ttf) is © 2016 VileR, CC-BY-SA 4.0<br>(<a target="_blank" href="https://int10h.org/oldschool-pc-fonts/readme/">https://int10h.org/oldschool-pc-fonts/readme/</a>)</center>
+
+<h1>Table of Contents</h1>
+<ul>
+    <li><a href="#Introduction">Introduction</a></li>
+    <li><a href="#Editor">Editor overview</a></li>
+    <li><a href="#File">File menu actions</a></li>
+    <li><a href="#World">World menu actions</a></li>
+    <li><a href="#Board">Board menu actions</a></li>
+    <li><a href="#Edit">Edit menu actions</a></li>
+    <li><a href="#View">View menu actions</a></li>
+    <li><a href="#Help">Help menu actions</a></li>
+    <li><a href="#Zedit2Settings">Zedit2 settings</a></li>
+    <li><a href="#CodeEditor">The code editor</a></li>
+    <li><a href="#AdvancedEditor">The advanced editor</a></li>
+    <li><a href="#ExtendedBuffers">Extended buffers</a></li>
+    <li><a href="#GradientFill">Gradient fill</a></li>
+    <li><a href="#ConvertImage">Convert image</a></li>
+    <li><a href="#Misc">Other miscellaneous info</a></li>
+    <li><a href="#Acknowledgements">Acknowledgements</a></li>
+    <li><a href="#Changelog">Changelog</a></li>
+</ul>
+
+<a name="Introduction"></a><h1>Introduction</h1>
+<p>
+    zedit2 is an editor for the 1991 DOS GCS "<a target="_blank" href="https://en.wikipedia.org/wiki/ZZT">ZZT</a>" and
+    the 1992 DOS GCS "Super ZZT". While these game creation systems come with their own editors, zedit2 is designed to
+    be a tool for power users, presenting the ability to access non-standard features that may be useful to designers
+    (e.g. stat stacking, off-board stat placement), as well as productivity features (e.g. mouse drawing, board
+    atlassing, image conversion, buffers, gradient fill.)
+</p>
+<p>
+    It is possible (in fact, fairly easy) to create worlds that will crash or freeze the original ZZT with this tool,
+    and while some behaviours come with a warning, relatively few actions are prohibited. zedit2 is designed to be a
+    tool that can create practically any possible ZZT world, reducing the requirement for manual hex editing to gain
+    access to advanced functionality.
+</p>
+<p>
+    This help file will describe many of the available pieces of functionality in zedit2. Note that, when the help file refers
+    to specific keystrokes, it is referring to the default keystroke configuration. If you have reconfigured any of
+    the keystrokes, references to those will be inaccurate.
+</p>
+
+<a name="Editor"></a><h1>Editor overview</h1>
+<center><img src="editor.png"></center>
+<ol>
+    <li><b>Window title</b> - shows the current world being edited and the current board</li>
+    <li><b>Menu</b> - provides access to various editing features</li>
+    <li><b>Info box</b> - Presents the following information, in order:
+        <ul>
+            <li>The number of stats on the board, excluding the player</li>
+            <li>The X and Y position of the cursor</li>
+            <li>The current board's index number and name</li>
+            <li>The size of the current board, in bytes (above 20000 is risky in vanilla ZZT and Super ZZT)</li>
+            <li>The size of the entire world, in bytes (above 430000 may be risky in vanilla ZZT and Super ZZT)</li>
+        </ul>
+    </li>
+    <li><b>Under cursor tile info</b> - shows information (colour and type) about the tile that is currently underneath the cursor.
+    If there are stats at this location, the box will also show the following stat information for each stat:
+        <ul>
+            <li><b>Stat ID</b>: The index of this stat. 0 is usually the player.</li>
+            <li><b>Cycle</b>: The cycle this stat runs at (a stat at cycle X will usually execute every X frames.)</li>
+            <li><b>X-Step</b>: The x-step of this stat.</li>
+            <li><b>Y-Step</b>: The y-step of this stat.</li>
+            <li><b>Param 1</b>: The first parameter of this stat.</li>
+            <li><b>Param 2</b>: The second parameter of this stat.</li>
+            <li><b>Param 3</b>: The third parameter of this stat.</li>
+            <li><b>Follower</b>: This stat's follower (used by centipedes).</li>
+            <li><b>Leader</b>: This stat's leader (used by centipedes).</li>
+            <li><b>Instr. Ptr</b>: This current position of the code that this stat is executing. -1 means stopped.</li>
+            <li><b>Code length</b>: The length, in bytes, of this stat's ZZT-OOP code.</li>
+            <li><b>Under</b>: The colour and type of the tile under this stat.</li>
+        </ul>
+    </li>
+    <li><b>Buffer tile info</b> - as before, but for the tile currently in the editing buffer. Pressing space will place this tile.</li>
+    <li><b>Current mode display</b> - shows the current editing mode:
+        <ul>
+            <li><b>Editing</b>: The default mode.</li>
+            <li><b>Type to place text</b>: Toggled by F2, when printing characters are typed into the editor, text tiles will be written.</li>
+            <li><b>Drawing</b>: Toggled by tab, if the cursor is moved with the arrow keys while in this mode, the buffer tile will be placed automatically with each step.</li>
+            <li><b>ENTER on other corner</b>: Enabled with Alt-B, when block selection mode is enabled, move the cursor to specify the bounds of the block, and press ENTER to access block actions.</li>
+            <li><b>ENTER to place block</b>: After copying or moving a block, press ENTER to place it at the cursor position.</li>
+        </ul>
+        Messages will also appear here briefly after performing certain actions such as saving, taking screenshots etc.
+    </li>
+    <li><b>Editing screen</b> - the screen where the current board (or boards, if atlassing is enabled) is shown. The
+        bevelled box in the centre is the cursor. If the area is larger than the editing window size, the scroll bars
+        can be used to scroll the display around.
+    </li>
+</ol>
+<p>
+    Upon starting up Zedit2, you will be presented with a brand new ZZT world. You can create a new Super ZZT world or
+    open an existing world through the File menu.
+</p>
+<p>
+    The arrow keys will move the editing cursor around the screen. To move the cursor around in steps of 10, you can
+    hold the Alt key down while moving the cursor.
+</p>
+<p>
+    On the left panel in a box titled "Buffer" you will see the current tile you have in your buffer. To place this tile,
+    press space. To choose a different tile, press F3 through F10 to open up different menus containing different tiles
+    that can be placed. Some tiles will require some configuration before you can place them. Tigers, for example, will
+    require you to select an intelligence and firing rate, as well as whether the tiger fires bullets or stars. To
+    choose a different colour, press C.
+</p>
+<p>
+    Press enter when the cursor is over a tile to reconfigure it and store it in your buffer. You can also simply store
+    the tile by pressing insert. If the tile is already in your buffer and you wish to reconfigure it, press P. If you
+    instead want to reconfigure a tile that is on the board without storing it, press Alt-M.
+</p>
+<p>
+    You can perform more advanced editing of a particular tile, including freely setting all stat variables, adding
+    stats to a tile that is not normally meant to have them, removing stats from a tile that is normally meant to
+    have them and adding multiple stats to a single tile by holding Ctrl when you press enter, P or Alt-M. See the
+    <a href="#AdvancedEditor">advanced editor</a> section of the help file for more details.
+</p>
+<p>
+    You can also use the mouse for editing. Hold the left mouse button and draw to place tiles. Use the right mouse
+    button to store the tile under your mouse position into your buffer. Both of these will also move your cursor to the
+    mouse position. You can also move the cursor to the mouse position without placing or storing a tile by pressing
+    the middle mouse button. Finally, you can use the mouse wheel to zoom in and out.
+</p>
+<a name="File"></a><h1>File menu actions</h1>
+<h2>New ZZT / Super ZZT World</h2>
+<p>
+    Creates a new ZZT (or Super ZZT) world. This new world will be created with two boards- a board titled 'Title Screen'
+    and a board titled 'First board', with the player approximately placed in the centre and surrounded by empties.
+</p>
+<h2>Open world</h2>
+<p>
+    Allows you to choose a .ZZT, .SZT or .SAV world to open. Whether the file is ZZT or Super ZZT is discovered by
+    analysing the file header.
+</p>
+<h2>Recent files</h2>
+<p>
+    Shows the 10 most recent files opened in Zedit2 for quick access.
+</p>
+<h2>One world at a time</h2>
+<p>
+    If this option is selected Zedit2 will only be able to open one world at a time and loading or creating a new
+    world will close the current one. If this option is not selected you can open up multiple worlds at a time.
+</p>
+<h2>Save / Save as</h2>
+<p>
+    Saves the current world to the specified location. If the world has previously been opened or saved, 'Save' will
+    automatically resave the file to the same location. If 'Save as' has been selected or the world is a newly created
+    one, a file save dialog will be presented allowing you to choose a location and filename.
+</p>
+<p>
+    When saving, Zedit2 will check your world against various limits and may warn you about settings that may cause
+    compatibility problems when run in (Super) ZZT. Some limits are hard and Zedit2 will be unable to save your world
+    at all if you go past them.
+</p>
+<h2>Zedit2 settings</h2>
+<p>
+    Allows the configuration of several aspects of Zedit2. See the <a href="#Zedit2Settings">Zedit2 settings</a>
+    section for more information.
+</p>
+<h2>Close world</h2>
+<p>
+    This will simply close the current world being edited.
+</p>
+<a name="World"></a><h1>World menu actions</h1>
+<h2>World settings</h2>
+<p>
+    Here you can configure various options that are global to the world being edited:
+</p>
+<ul>
+    <li><b>Starting board</b>: This is the board the ZZT world will start on when run. In the original ZZT editor
+    the starting board is set to whichever board was being edited when the world was saved. In Zedit2, however,
+    the board needs to be manually selected here.</li>
+    <li><b>World name</b>: This is the 'world name' of this ZZT world. Note that, unless you change this, it will
+    be automatically set to the filename you save this world as, minus the file extension. This is used internally
+    by ZZT to reload the world after exiting it. Be careful when modifying this.</li>
+    <li><b>Health (and other counters)</b>: Sets the starting value for these counters.</li>
+    <li><b>Savegame / Locked</b>: In ZZT save files have this 'savegame' byte set automatically. This prevents
+    editing by the original editor unless debug mode is on.</li>
+    <li><b>Keys</b>: Select which keys the player starts of with here.</li>
+    <li><b>Flags</b>: Enter the starting flags (up to 10 in ZZT and 16 in Super ZZT). Note that only flags containing
+    only the characters A-Z, 0-9, : and _ can be reference in ZZT-OOP; however, you can set other flags here.</li>
+</ul>
+<h2>Import world</h2>
+<p>
+    Opens a file chooser allowing you to select another (Super) ZZT world. All the boards from that world will then be
+    appended onto the world you are currently editing.
+</p>
+<h2>Load charset</h2>
+<p>
+    Allows you to open either a MegaZeux-format .CHR or FontMania-format .COM file to replace the current character set.
+    This character set will also be used when testing worlds if the appropriate configuration options are set.
+</p>
+<p>
+    Note that the loaded character set is not stored in the world format anywhere- if you are working on a world with a
+    custom character set, for now you will need to reload it each time you open Zedit2.
+</p>
+<h2>Load palette</h2>
+<p>
+    Allows you to open a MegaZeux-format VGA .PAL palette file to replace the current palette.
+    This palette will also be used when testing worlds if the appropriate configuration options are set.
+</p>
+<p>
+    Note that the loaded palette is not stored in the world format anywhere- if you are working on a world with a
+    custom palette, for now you will need to reload it each time you open Zedit2.
+</p>
+<h2>Default charset and palette</h2>
+<p>
+    Resets the current charset and palette back to the ZZT defaults.
+</p>
+<h2>Blinking</h2>
+<p>
+    When this is set (the default) Zedit2 will treat colours 128-255 as blinking colours, which is how ZZT has looked
+    for the majority of players. Disabling this will cause Zedit2 to treat the blink bit as a high colour bit instead,
+    resulting in a set of brighter colours being made available instead. This will be used when testing worlds if the
+    appropriate configuration options are set.
+</p>
+<h2>Test world</h2>
+<p>
+    This will save a temporary copy of the world and attempt to launch ZZT to play it. You will need to configure
+    Zedit2 for your environment under 'Zedit2 Settings' in the 'File' menu before you will be able to use this.
+</p>
+<a name="Atlas"></a><h2>Atlas</h2>
+<center><img src="atlas.png"></center>
+<p>
+    This toggles board atlassing, which can be a powerful tool for visualising a set of interconnected boards,
+    especially in conjunction with the zoom controls. When you enable atlassing, Zedit2 will start from the board you
+    are currently editing and expand outwards, connecting to boards via the board exits, then display them all in one
+    continuous editing view. Note that boards are not necessarily reciprocally connected, and boards are not always
+    connected in a way that makes cartographic sense. As a result, board atlassing may have different results depending
+    on which board you started from if the boards are not sensibly connected.
+</p>
+<p>
+    Board atlassing causes many editing features to slightly change in terms of behaviour while it is enabled. For
+    example, if you move the cursor into the 'void' between boards and then create a new board, that board will be
+    automatically added to the atlas in the location your cursor was. Furthermore, if that location shared borders
+    with existing boards (and those boards were not connected to anything else in the direction of the newly-added
+    board) those boards will automatically be connected together. This can speed up the creation of large maps.
+</p>
+<p>
+    After an atlas has been created, it will stick around in your current editing session until removed. If you
+    change to another board that is not within an atlas, the editing view will switch back to the single board view;
+    however, upon changing back to a board that is part of the atlas, the atlas view will come back. In addition, you
+    can have multiple separate atlasses created at the same time, if the world contains multiple separate contiguous
+    regions of boards.
+</p>
+<p>
+    To remove an atlas, simply switch to a board that is part of an atlas, then choose Atlas from the World menu again
+    (or press Ctrl-A).
+</p>
+<p>
+    Note that large altasses may have a serious impact on editing performance. If this is causing problems you might
+    find it better to stick with the single-board view while editing your world and only use atlas mode for looking at
+    your work afterwards.
+</p>
+<a name="Board"></a><h1>Board menu actions</h1>
+<h2>Board settings</h2>
+<p>
+    Modifies various per-board settings:
+</p>
+<ul>
+    <li><b>Board name</b>: The name of the current board. This is never shown in-game, but is used in ZZT editors to
+    help with keeping track of boards.</li>
+    <li><b>Max player shots</b>: Maximum number of player bullets that can be on the board at a time. If this is set to 0,
+    the player cannot shoot at all. If this is set to another value, the player will not be able to shoot if there are
+    at least this many player bullets on the board.</li>
+    <li><b>Time limit</b>: The board time limit. When the time limit runs out, the player will lose 10 health. Note that
+     the remaining time is not displayed in Super ZZT. It still works, though.</li>
+    <li><b>Player entry X/Y</b>: The player's re-entry location, used to keep track of the player's location for the
+    purposes of the 'restart if hurt' flag. Can normally be safely left at 0,0.</li>
+    <li><b>Camera X/Y</b>: The current location of the player's viewport camera in Super ZZT.</li>
+    <li><b>Dark</b>: Whether the board is dark or not. This option is not available in Super ZZT.</li>
+    <li><b>Restart if hurt</b>: If this flag is set and the player takes built-in damage (that is, damage from a bullet,
+    star, creature, blinkwall or from running out of time), the player will be sent back to the location they entered
+    the board on.</li>
+</ul>
+<h2>Board exits</h2>
+<p>
+    Allows you to select the boards that can be reached from the various board edges. The 'Reciprocated' check boxes
+    indicate which of these connections are reciprocated from the connecting board (that is, if board A has an east
+    connection to board B and board B has a west connection to board A, they are considered to be reciprocating.) You
+    can also check this box to automatically cause the linked board to link the current board back.
+</p>
+<h2>Switch board</h2>
+<p>
+    Brings up a list of boards, allowing you to switch to editing another board.
+</p>
+<h2>Add board</h2>
+<p>
+    Prompts for a board name, then creates a new board using that name and switches to it.
+</p>
+<h2>Add boards (*x* grid)</h2>
+<p>
+    Prompts for a width, height and board name template, then creates width*height boards, all interconnected in a
+    grid organisation. This can be used for quickly constructing large world map areas and locations. The board name
+    template will have the {x} replaced with the board's X coordinate within this grid (from 1 to width) and the {y}
+    replaced with the board's Y coordinate (from 1 to height).
+</p>
+<p>
+    Two additional options are available. The 'Erase player from boards' checkbox will, if selected, pre-remove the
+    player (as though the <a href="#ErasePlayer">Erase player from board</a> operation was performed on each board). The 'Open board grid in
+    atlas view' will open the newly-constructed grid in an <a href="#Atlas">atlas</a>.
+</p>
+<h2>Board list</h2>
+<center><img src="boardlist.png"></center>
+<p>
+    This dialog shows a list of all the boards in your currently edited world. From here you can edit the board name,
+    player shots, time limit, player re-entry coordinates, camera coordinates, exits, darkness and restart if hurt
+    settings en masse.
+</p>
+<p>
+    One or more boards can also be selected in this dialog. While boards are selected, the buttons on the right
+    respectively can be used to move the board(s) up or down in the board listing, or delete them. This will
+    automatically edit any board exits or passages pointing to the affected board(s). If destructive changes are
+    made (virtually guaranteed to happen when deleting a board, but can also happen if rearranging boards causes
+    the title screen board to change) the editor will warn you of these changes before prompting you to continue.
+</p>
+<p>
+    Note that passages without a stat (which always lead to the title screen board) will not be altered, and the
+    same is true for any stats that become passages later, so this method of rearranging boards is not entirely
+    foolproof.
+</p>
+<h2>Import board</h2>
+<p>
+    Prompts you to choose a .BRD file to import, loading it and its settings to replace the current board. Note
+    that you will not be able to load a Super ZZT .BRD in a ZZT world and vice-versa.
+</p>
+<h2>Export board</h2>
+<p>
+    Prompts you to choose a .BRD file to export the current board and its settings to. Note that this will not
+    perform any compatibility checks.
+</p>
+<h2>Stats list</h2>
+<center><img src="statlist.png"></center>
+<p>
+    This dialog shows a list of all the stats and their parameters on the current board. Unlike the board list
+    this does not allow you to directly edit the parameters; however, you can use the columns to sort the data
+    in order to find things quickly.
+</p>
+<p>
+    You can modify a stat by double-clicking on its entry, or right-clicking
+    the entry and selecting 'Modify', or selecting the entry and pressing enter. If you want to access the advanced
+    modification screen, select 'Modify (advanced)' or press ctrl-enter instead.
+</p>
+<p>
+    Any stats you select on this screen will also have a blue rectangle drawn around them in the board view, so
+    you can use this to find where particular stats are. Another thing this stat display allows you to do is find
+    stats that are positioned off-board and modify them, something that cannot be done from the main editor.
+</p>
+<a name="Edit"></a><h1>Edit menu actions</h1>
+<h2>Select colour</h2>
+<p>
+    This dialog will let you select a colour to change your current buffer tile to. You can use the arrow keys and
+    enter to select one, or you can use the mouse to click on a colour. Note that, if your current buffer tile is a
+    text element, you will only have a limited palette of colours to choose from. If you wish to change the text
+    character, press P or select 'Modify buffer tile' instead.
+</p>
+<h2>Modify buffer tile</h2>
+<p>
+    If your current buffer tile has associated configurable properties, this will pop up a dialog prompting you to edit
+    it. The nature of this dialog depends on the type of tile selected:
+</p>
+<ul>
+    <li>Creatures and other stat elements with basic configurable properties will give you a dialog to modify these
+    settings, which are usually things like intelligence, firing rate, direction etc.</li>
+    <li>Objects will prompt you to select the character to represent them, and then will open up their ZZT-OOP code
+    for editing. More information about this dialog is found in the <a href="#CodeEditor">code editor</a> section.</li>
+    <li>Scrolls will open up the Code Editor allowing you to edit their contents.</li>
+    <li>Passages will prompt you to edit their destinations.</li>
+    <li>Text elements will prompt you to select their character.</li>
+    <li>Other types without configurable properties will not result in any dialog being opened.</li>
+    <li>Finally, any tile with more than one property will cause the <a href="#AdvancedEditor">advanced editor</a> to
+    be opened.</li>
+</ul>
+<p>
+    The '(advanced)' form of this option will open up the <a href="#AdvancedEditor">advanced editor</a> for that tile.
+</p>
+<h2>Modify tile under cursor</h2>
+<p>
+    Similar to 'Modify buffer tile', but this time, the tile under the cursor is modified instead.
+</p>
+<h2>Start block operation</h2>
+<p>
+    Start block operation, more conveniently accessed via the keyboard shortcut (Alt-B), begins the selection of a
+    contiguous region of tiles. Upon selecting the block and pressing Enter, a popup will prompt you to select
+    one of several block actions:
+</p>
+<center><img src="block.png"></center>
+<ul>
+    <li><b>Copy block</b>: Allows you to select a location to paste a copy of this block. Everything within
+    the block (tiles, stats) will be duplicated. If a non-clone player is in the block, that player will be
+    moved to the new location. Note that 'Copy block' can also be used to transfer regions between worlds-
+    just select 'Copy block' in the source world, then switch over to the destination world to paste it.</li>
+    <li><b>Copy block (repeated)</b>: Same as 'Copy block', except you can paste the block multiple times. Once
+    you are done, press escape to end the operation.</li>
+    <li><b>Move block</b>: This will move a region of the board to another location, leaving empty tiles in its
+    wake. Note that, providing the move takes place entirely within the one board, the stat order of those stats
+    being moved will remain unchanged. Move block cannot be used to move data between worlds, however.</li>
+    <li><b>Clear block</b>: This will erase the contents of the selected region, erasing all stats (except the
+    player) and replacing all tiles with empties.</li>
+    <li><b>Flip block</b>: This will perform a vertical 'flip' of the contents of the block, such that tiles
+    that were previously at the top are now at the bottom and vice-versa. Like move, this will not change the
+    order of stats providing the entire flip remains within the same board.</li>
+    <li><b>Mirror block</b>: Similar to 'Flip block', but horizontal.</li>
+    <li><b>Paint block</b>: This will change the colour of every tile in the block to the colour of the buffer
+    tile. Note that text elements may only be able to change to an approximation of that colour if the colour
+    is not a valid text colour.</li>
+</ul>
+<p>
+    While it is not one of the options listed on the menu, you can also press ctrl-(0-9) to store the currently
+    selected block in an extended buffer. See the <a href="#ExtendedBuffers">extended buffers</a> section for more
+    detail. You can also do this after choosing 'Copy block' but before pasting the block.
+</p>
+<h2>Enter text</h2>
+<p>
+    While in this mode (which can also be accessed by pressing F2), characters typed into the editing window will
+    no longer perform their usual keyboard shortcuts, but will instead create text elements of the character typed.
+    Pressing enter while in this mode will also move the cursor down 1 tile vertically, and return the horizontal
+    position to whatever it was when you started typing, allowing you to type in paragraphs naturally. Press escape
+    to leave this mode.
+</p>
+<p>
+    Note that, if your current buffer tile was set to an appropriate text colour (any colour with a white foreground
+    except for white on grey), that colour will be used for text. If it is set to an invalid colour, an approximation
+    will be used instead.
+</p>
+<h2>Toggle drawing</h2>
+<p>
+    While in this mode (which can also be accessed by pressing Tab), moving the cursor around will also place tiles,
+    as though you were pressing space after each movement. Press escape to leave this mode.
+</p>
+<h2>Flood fill</h2>
+<p>
+    Flood fill, also accessible by pressing F, will take the current buffer tile and attempt to place it to cover all
+    identical tiles in a contiguous region. Note that, for the purposes of flood fill, all Empty tiles are considered
+    to be identical irrespective of colour, including empties with stats, so be warned.
+</p>
+<h2>Gradient fill</h2>
+<p>
+    Similar to flood fill, but opens up a dialog allowing you to perform a special kind of flood. See the
+    <a href="#GradientFill">gradient fill</a> section of this help file for more details.
+</p>
+<h2>Convert image</h2>
+<p>
+    Prompts you to choose a BMP, GIF, PNG or JPEG image to convert into ZZT. See the
+    <a href="#ConvertImage">convert image</a> section of the help file for details.
+</p>
+<h2>Convert image from clipboard</h2>
+<p>
+    As before, but will use whatever image is currently in your system clipboard as input, rather than prompting
+    you to choose a file on your file system.
+</p>
+<a name="ErasePlayer"></a><h2>Erase player from board</h2>
+<p>
+    This operation will replace the current player on the board with whatever tile was under that player and then move
+    the player stat to the corner between the top and right board edges (61,0 in ZZT, 97,0 in Super ZZT). This is useful
+    for title screens, and occasionally for working on a board's graphical assets without the player getting in the way.
+    If the board is going to be used for gameplay, however, the player should be readded to it first. This can be done
+    simply by creating a new player (in the F10 menu by default) - note that a player clone will not suffice.
+</p>
+<h2>Buffer manager</h2>
+<p>
+    Opens up the extended buffer manager. See the <a href="#ExtendedBuffers">extended buffers</a> section of the help
+    file for more information about this.
+</p>
+<h2>Element menus (F3-F10)</h2>
+<p>
+    These menus, also available via the associated function key, allow you to select various elements to replace your
+    current buffer tile with. These menus are configurable via the <a href="#Zedit2Settings">Zedit2 settings</a> dialog.
+</p>
+<a name="View"></a><h1>View menu actions</h1>
+<h2>Zoom in / out / Reset zoom</h2>
+<p>
+    These options will zoom the display in, out and back to the default (1:1) zoom level respectively, allowing you to
+    get an eagle eye view of a large area (useful with Super ZZT or board atlassing), or alternatively get close up for
+    fine editing. You can also scroll the mouse wheel to change the zoom level.
+</p>
+<h2>Show grid in atlas</h2>
+<p>
+    When this is selected, in atlas mode, grid lines will be shown between board boundaries. These can be turned off
+    to enable a more immersive viewing/editing experience. These grid lines, however, do show some useful functional
+    information when it comes to board connectivity:
+</p>
+<ul>
+    <li>Thin partially translucent green edges mean that this board is connected to the board it is physically
+    next to in the atlas.</li>
+    <li>Thick partially translucent red edges mean this board is connected to some other board via this edge. This
+    board may appear somewhere else in the atlas, for example.</li>
+    <li>Thick opaque white edges mean this board is not connected to anything via this edge.</li>
+</ul>
+<h2>Show _______</h2>
+<p>
+    These options, also available via their key combinations (shift-F1 through F5), visually highlight the presence
+    of certain element, which may be difficult to see or tell apart from other elements normally:
+</p>
+<ul>
+    <li><b>Show stats</b>: This will visually highlight tiles with an associated stat</li>
+    <li><b>Show objects</b>: This will visually highlight all Object elements</li>
+    <li><b>Show invisibles</b>: This will reveal invisible walls</li>
+    <li><b>Show empties</b>: This will visually highlight all empties</li>
+    <li><b>Show fakes</b>: This will visually highlight all fakes</li>
+    <li><b>Show empties as text</b>: This will display empties as text characters, using their colour to determine
+    the text character to display. This can be useful for revealing erased text characters in ZZT games made with
+    the original editor.</li>
+    <li><b>Show nothing</b>: This will return the display to normal. You can also return the display to normal if
+    currently in a Show _______ mode by selecting that same mode again (either via menu or key combo) or by
+    pressing escape.</li>
+</ul>
+<h2>Take screenshot</h2>
+<p>
+    This will take a screenshot of the current board (or boards, if atlassing is on) and save it as a PNG image
+    somewhere on your file system (usually the directory you launched Zedit2 from). This will not include any of the
+    UI or any other visual markup applied by Zedit2, and will always be captured at a 1:1 zoom level.
+</p>
+<h2>Take screenshot to clipboard</h2>
+<p>
+    As before, but this will capture the same shot directly into your system clipboard, for pasting directly into
+    image editors or other software.
+</p>
+<a name="Help"></a><h1>Help menu actions</h1>
+<h2>Help</h2>
+<p>
+    Displays this help document.
+</p>
+<h2>About</h2>
+<p>
+    Shows the current version of Zedit2 in an animated display. Press any key or click on it to close it.
+</p>
+<!-- ===================================================================================================== -->
+<a name="Zedit2Settings"></a><h1>Zedit2 settings</h1>
+<p>
+    This dialog, available under the 'File' menu, allows you to redefine the functionality of several parts of
+    Zedit2.
+</p>
+<h2>Keystroke configuration</h2>
+<p>
+    Most of the key combinations used in Zedit2 can be configured here. Simply click on one of the boxes and press
+    the desired key combination to change it to that. Note that you will not be able to select a key combination
+    that is already in use elsewhere.
+</p>
+<h2>World testing configuration</h2>
+<p>
+    You can test the world you are editing in Zedit2 by pressing Alt-T or choosing 'Test world' from the World menu.
+    This screen allows you to configure ZZT and Super ZZT for testing purposes.
+</p>
+<p>
+    Note that much of the functionality was designed with asie's <a href="http://zeta.asie.pl/">Zeta</a> emulator in
+    mind, and while you may have some success with other emulators like <a href="https://www.dosbox.com/">Dosbox</a>,
+    or even ZZT game engine recreations, some functionality may be missing.
+</p>
+<ul>
+    <li><b>Start the tested world on the current board</b> - The temporarily world created during testing will have
+        its starting board set to the current board if this option is selected. This can make testing a world while
+        working on it more efficient.</li>
+    <li><b>Test directory</b>: For best results, this should be a directory that:
+        <ol>
+            <li>Can be written to by Zedit2</li>
+            <li>Contains ZZT and your ZZT emulation solution of choice</li>
+        </ol>
+        A temporary testing world will be saved into this directory and then your emulator will be invoked to run ZZT
+        with this testing world. The world will be deleted after exiting ZZT (however, if Zedit2 closes for some other
+        reason before ZZT exits, the testing world may be left behind.)
+    </li>
+    <li><b>Command to run</b>: This is the program that Zedit2 will invoke to test ZZT. It will be invoked from the
+        test directory specified above, so it must be reachable from within that directory.</li>
+    <li><b>Command parameters</b>: These are command-line parameters that will be passed to the above program
+        (before Zedit2 passes in other parameters, such as the filename of the testing world.)</li>
+    <li><b>Base name</b>: The name that the temporary testing world will be named after. Note that Zedit2 will
+        attempt to append numbers onto the end of this filename if the file already exists. If the base name is
+        <tt>__TEST</tt>, the testing world will be named <tt>__TEST.ZZT</tt> (or <tt>__TEST.SZT</tt> in the case of
+        Super ZZT). If there is already a file named <tt>__TEST.ZZT</tt> it will be named <tt>__TEST2.ZZT</tt> instead,
+        and so on.
+    </li>
+    <li><b>After ____ milliseconds inject 'P' into the input stream</b>: This is a useful, albeit experimental option
+        designed to be used alongside the '-t' command-line argument for Zeta which will skip the K C [enter] prompt at
+        the start of ZZT. With this, Zedit2 will attempt to press P on the Zeta window when it pops up, launching you
+        directly into the game.</li>
+    <li><b>After ____ milliseconds inject 'Enter' into the input stream</b>: This is another experimental option
+        designed to be used with the above option when testing Super ZZT worlds. Super ZZT normally launches an
+        introductory sequence after the user presses P, which is then terminated by pressing Enter. This will press Enter
+        for you, allowing you to immediately jump into your Super ZZT world. (Note that the time delay will happen
+        <i>after</i> P is pressed by the above option, assuming it is selected.</li>
+    <li><b>Use charset and palette, if modified</b>: If a non-default charset or palette is currenty loaded, Zedit2
+        will save the charset and/or palette to files in the test directory and pass in <tt>-l palette:pal:__TEST.PAL</tt>
+        and <tt>-l charset:chr:__TEST.CHR</tt> command-line parameters (with the filename changed to whatever the
+        configured base name is). This will work in Zeta but is unlikely to work in other emulators.</li>
+    <li><b>If blinking is disabled, pass -b</b>: If Blinking has been turned off (the option is found in the World
+        menu), this will pass the -b command-line option, which in Zeta will disable blinking and treat the blink bit as
+        a high colour bit instead. Again, unlikely to work in other emulators.</li>
+</ul>
+<h2>Code editor configuration</h2>
+<p>
+    This screen allows you to configure the colours used in the ZZT-OOP editor. You can also configure whether newline
+    characters are automatically added to the end of objects you edit (as omitting these can occasionally result in
+    unexpected behaviour.)
+</p>
+<h2>Element menu configuration</h2>
+<p>
+    Here you can configure the contents of the F3-F10 menus by dragging elements from one menu to another and renaming
+    the menus as you please. You can also choose some presets inspired by the original (Super) ZZT editor and <a href="https://github.com/cknave/kevedit">KevEdit</a>.
+</p>
+<p>
+    Note that both elements from ZZT and Super ZZT will appear on this configuration screen, but they will only appear
+    in the menus if supported by the current world being edited.
+</p>
+<a name="AdvancedEditor"></a><h1>The advanced editor</h1>
+<center><img src="advancededitor.png"></center>
+<p>
+    The advanced editor allows you to make nonstandard modifications to a tile's contents. It is divided into two
+    panels; the 'Edit tile' panel and the 'Edit stats' panel. The 'Edit tile' panel simply allows you to change the
+    type and colour of this tile. You can even access types that have no meaning in ZZT (these may cause your game
+    to crash when displayed.)
+</p>
+<p>
+    The 'Edit stats' panel will only be displayed if this tile has stats. You can add a stat to a statless tile by
+    clicking the 'Add stat' button. From here you can select which stat you are editing on the list on the left
+    (in the case of multiple stats associated with one tile) and edit the stat parameters on the right. Most of these
+    are straightforward, but there are a couple of things that stand out:
+</p>
+<ul>
+    <li><b>Location</b>: This will change the location, on the board, of this stat. After you apply this change
+    to the board, the stat will move from it. Note that this will change the stat's location, not the tile's. You
+    can make use of this to do things like place stats in off-board locations.</li>
+    <li><b>Order</b>: The order in which stats execute is important in ZZT, and this is a special stat parameter
+    that is only used in Zedit2, which influences the order of stats. Stats with a lower Order value will be sorted
+    before stats with a higher Order. Note that other editors, including ZZT itself, will erase this setting. This
+    setting also has a different behaviour if the 'Set ID' flag is enabled. Note that stat 0 (the player) will not
+    be reordered irrespective of the value of this parameter.</li>
+    <li><b>Follower / Leader</b>: You can click the magnifying glass to select a stat from the stat list.</li>
+    <li><b>Instr. Ptr</b>: The code position in the title bar of the code editor can be used as a reference
+    for editing this value. You can also set it to -1 to 'pre-stop' an object, allowing you to omit a starting
+    <tt>#end</tt> command.</li>
+    <li><b>Edit code</b>: This will allow you to edit the code attached to this stat. Notably, this will even
+    allow you to add code to stats that do not normally have any use for it.</li>
+    <li><b>Bind</b>: This will prompt you to select a stat from the stat list. The stat will then be bound to
+    that stat's code. This is a powerful tool for saving memory, but can be risky when it comes to zap/restore.</li>
+    <li><b>Autobind</b>: This enables 'autobind' mode for this stat. A stat with autobind will automatically bind
+    with another stat that contains identical code. This can make it easier to quickly bind many identical stats.</li>
+    <li><b>Set ID</b>: When this flag is enabled, the Order value is treated as an absolute stat number (useful in
+    certain situations, like when dealing with duplicator teleportation or non-1 cycle values.) If the stat number
+    cannot be obtained, Zedit2 will attempt to give the stat a number close to it.</li>
+    <li><b>Player</b>: The stat 0 player has special treatment in ZZT. This flag identifies this stat as being stat 0.</li>
+</ul>
+<a name="CodeEditor"></a><h1>The code editor</h1>
+<center><img src="codeeditor.png"></center>
+<p>
+    This editor is launched whenever you attempt to edit the code attached to a stat. It contains some basic editing
+    features that you would expect in a text editor, in addition to the ability to preview ZZT <tt>#play</tt>
+    statements - place the text cursor at the start of the #play line or lines and press Alt-T.
+</p>
+<p>
+    The editor will attempt to warn you about syntactically incorrect ZZT-OOP or otherwise risky practices by
+    displaying text in a warning colour. In that event, you can hold the mouse over the relevant piece of code to see
+    a description of the issue.
+</p>
+<p>
+    There are a couple of other areas where holding the mouse over a section of code will display something useful:
+</p>
+<ul>
+    <li>Holding the mouse over a <tt>#char</tt> statement will reveal the character corresponding to the value used.</li>
+    <li>Holding the mouse over a <tt>#play</tt> statement will reveal the number of <tt>/i</tt>s that a Cycle 1
+    object will need to wait, on ZZT's default speed, to equal the amount of time that <tt>#play</tt> sequence
+    will take.</li>
+</ul>
+<p>
+    Note that you can press F3 while in the code editor to insert a text character into your code. You might also
+    find this dialog useful for finding the character # of any character, for use with the <tt>#char</tt> command.
+</p>
+<a name="ExtendedBuffers"></a><h1>Extended buffers</h1>
+<center><img src="buffermanager.png"></center>
+<p>
+    In addition to the standard editor buffer, which contains one tile and does not persist if Zedit2 is closed,
+    there are a set of extended buffers that can contain individual tiles and blocks of tiles. As long as Zedit2 is
+    closed normally, these buffers will persist along with Zedit2's configuration and can therefore be used to build
+    up a library of useful objects, patterns, fades etc.
+</p>
+<p>
+    You can press Ctrl-(0-9) to store your current buffer tile in one of ten extended buffers. Once you have a tile
+    stored in this way, you can retrieve it by pressing 0-9. It will then become your new current buffer tile.
+</p>
+<p>
+    The extended buffer can be used for storing blocks of tiles as well. While selecting or pasting a block, you can
+    press Ctrl-(0-9). This will store the block in that buffer. When you press 0-9, if there is a block larger than
+    1x1 in that extended buffer, the editor will switch into block paste mode and you will be able to place it by
+    pressing enter.
+</p>
+<p>
+    You can preview, access and manipulate the contents of your extended buffers by bringing up the buffer manager
+    (Ctrl-B or under the 'Edit' menu). You can then see the contents of each buffer, as well as move them around by
+    clicking and dragging, and retrieve them (as though you pressed the key associated with that buffer) by clicking
+    on them.
+</p>
+<p>
+    Although the first 10 extended buffers are special as they can be accessed through keystrokes, additional extended
+    buffers are available from the buffer manager. You can set their contents by copying something to one of the first
+    10 buffers using the appropriate key combo, then moving it to another slot in the buffer manager.
+</p>
+<p>
+    Note that buffers with certain properties will be available as patterns for the
+    <a href="#GradientFill">gradient fill</a> command.
+</p>
+<a name="GradientFill"></a><h1>Gradient fill</h1>
+<center><img src="gradientfill.png"></center>
+<p>
+    This feature works similarly to flood fill in how it determines the region to cover, but can be configured to fill
+    that region in special ways. This is a productivity tool designed to help create certain effects that are often
+    seen in ZZT games but are time-consuming to create by hand.
+</p>
+<p>
+    The basic principle here is that you choose a gradient and gradient style and configure it how you please. The
+    flood-filled region will then be filled in using this gradient. The editing window will update as you change the
+    fill settings, so you can preview what the change will look like before you make it.
+</p>
+<h2>Gradient styles</h2>
+<ul>
+    <li><b>Linear</b>: A linear gradient drawn along the angle of your choice.</li>
+    <li><b>Box</b>: Each tile in a box gradient will be drawn based on its Manhatten distance from the defined centre point.</li>
+    <li><b>Radial</b>: Same as a box gradient, but with Euclidean distance, resulting in a circular gradient.</li>
+    <li><b>Conical</b>: Tiles are drawn based on their angle away from the centre point instead of distance.</li>
+    <li><b>Slime</b>: Tiles are drawn based on their distance from the edges of the flood-fill. Useful for creating pools, cave walls etc.</li>
+</ul>
+<h2>Gradient</h2>
+<p>
+    Here you can select the gradient that will be used for this fill. Seven default gradients are provided, but if these
+    are not sufficient, you can create additional gradients by storing a block that is more than 1 tile wide and
+    exactly 1 tile high into an <a href="#ExtendedBuffers">extended buffer</a>. All blocks meeting this requirement will
+    be available for selection from the gradient drop-down box.
+</p>
+<h2>Gradient parameters</h2>
+<ul>
+    <li><b>Start</b>: How far along in the gradient pattern does the gradient being drawn actually start from. This is
+    normalised such that 0 is the start of the gradient pattern and 1 is the end. If you set this to a value larger
+    than 0, the start of the gradient will be skipped. If you set this to a value smaller than 0, the start of the
+    gradient will effectively be repeated, based on how far into the negatives this goes.</li>
+    <li><b>Finish</b>: How far along the pattern does the gradient go before ending. If you set this to less than 1, the
+    gradient will end early and the latter parts of the pattern will be unused. If you set this to larger than 1, the
+    last tile in the pattern will be repeated, dependng on how high you set it. Note that, if the 'Start' value is
+    lower than the 'Finish' value, 'Finish' will be treated as 'Start' and vice-versa. If you want to reverse the
+    pattern, use the Invert setting.</li>
+    <li><b>Horizontal / Vertical</b>: The centre point, relative to the total area being flood-filled. This position
+    is used by the Box, Radial and Conical gradients.</li>
+    <li><b>Angle</b>: For linear gradients, the angle that this gradient is drawn alongside. For conical gradients,
+    this angle is used to offset the angle the gradient is drawn at.</li>
+    <li><b>Repeats</b>: This setting causes the gradient pattern to repeat the specified number of times. Note that, on each
+    odd-numbered repeat, the gradient pattern will be reversed.</li>
+    <li><b>X/Y-Weight</b>: Used by the Slime gradient, this affects how much it "costs" for the fill to travel
+    horizontally vs vertically. The default settings of 0.8 and 1.4 are designed to counteract the rectangular shape of
+    the ZZT tiles. If you are working in Super ZZT you may prefer weights of 1.6 and 1.4, to reflect the wider tiles.</li>
+    <li><b>Diffusion</b>: Adds a small amount of random variance to the gradient, making it 'noisy'. This is a setting
+    that should probably be fine-tuned after you have chosen all your other flood-fill parameters, but can create
+    visually powerful results.</li>
+    <li><b>Invert</b>: If checked, the gradient pattern is treated as though it were reversed.</li>
+</ul>
+<a name="ConvertImage"></a><h1>Convert image</h1>
+<center><img src="convertimage.png"></center>
+<p>
+    This is another productivity tool, designed to take external bitmap images and convert them into a rough visual
+    approximation in ZZT, using ZZT elements as graphical tiles.
+</p>
+<p>
+    Note that this feature is highly experimental and may require significant tuning to produce decent results, if it
+    is possible to produce decent results at all. It may be best to use this as a base for doing manual design work on.
+</p>
+<p>
+    You can access this tool from the 'Convert image' and 'Convert image from clipboard' options in the 'Edit' menu.
+    After specifying an image, it will be loaded into the left screen in the convert image dialog. A preview of the
+    current conversion will be displayed in the right screen.
+</p>
+<p>
+    The converter is affected by the currently loaded palette and charset, as well as the current setting of the 'Blink'
+    parameter. These will all be used in the optimisation process, so it is recommended that, if you are using a custom
+    charset/palette/blink setting, that you have them loaded before you convert your images. Colours are compared in
+    <a href="https://en.wikipedia.org/wiki/CIELAB_color_space">CIELAB</a> colour space with an assumption that the
+    palette is in <a href="https://en.wikipedia.org/wiki/SRGB">sRGB</a> colour space, so this assumption may also affect
+    the outcome of the conversion.
+</p>
+<h2>Left, right, top, bottom</h2>
+<p>
+    These values are used to specify the bounds of the source image. You can
+    tweak these to clip the image prior to conversion.
+</p>
+<h2>Macroblock width and height</h2>
+<p>
+    These are important values when it comes to influencing the quality of the
+    conversion, but their use is subtle. These values are the size of the blocks used for comparing the results
+    of the conversion to the original image for the purposes of optimising output.
+</p>
+<p>
+    8x14, for example, will result  in entire characters being compared at a time. What will happen in that case is
+    that, in the output image, the contents of an entire tile will be averaged down to one pixel. The respective area
+    in the input image will also be averaged down to a single pixel and the two pixels will be compared for
+    similarity. The element and colour combination that result in the closest pixel will then be chosen to represent
+    that block of graphical data.
+</p>
+<p>
+    If you choose a smaller macroblock size, however, this will result in each char turning into multiple pixels, which
+    will then be compared against pixels created from the same-sized macroblocks in the original image. This can go
+    all the way down to 1x1 macroblocks, which result in individual pixels being compared. The converter will compare
+    the <a href="https://en.wikipedia.org/wiki/Root-mean-square_error">RMSE</a> of different tile choices to choose the
+    most optimal tile to represent that area of the image.
+</p>
+<p>
+    Macroblock sizes can only be provided in factors of the character size (8x14). This means the width of a macroblock
+    can only be 1, 2, 4 or 8 and the height can only be 1, 2, 7 or 14. The macroblock size setting has the following
+    implications:
+</p>
+<ul>
+    <li>Larger macroblocks result in faster conversion due to fewer comparisons needing to be made.</li>
+    <li>The largest macroblock size (8x14) usually only results in visually pleasing results when only solid
+    and dither characters are in use. This is because the only information used by the converter is the % of pixels
+    in the character that are set. Allowing the use of other elements results in something that looks like it came
+    out of <a href="https://en.wikipedia.org/wiki/AAlib">AAlib</a>, which is probably not desirable unless you want
+    that particular effect.</li>
+    <li>The smallest macroblock size (1x1) also frequently results in less-than-ideal results, owing to the fact that
+    individual comparison of pixels does not manage any kind of visual approximation, which means that dither
+    characters, for example, are highly unlikely to be used despite the fact that they are applicable in a lot of
+    cases. However, 1x1 macroblocks do have one particular edge case in which they are useful: If you have a perfect
+    (that is, no resizing, filtering or compression artifacts) screenshot of a ZZT board, you should be able to
+    perfectly recreate it using a 1x1 macroblock size, as this will favour exact matches for chars over anything
+    else. As long as your selected elements and 'Max Stats' value are sufficient for representing the characters used,
+    you can exactly recreate the screenshot in ZZT.</li>
+    <li>It is recommended that you try different settings. Often 2x2 is a reasonable compromise between precision and
+    accuracy.</li>
+</ul>
+<h2>Output width and height</h2>
+<p>
+    This is the width and height, in chars, of the output image. Note that the input image will be scaled, if necessary,
+    to match this width and height.
+</p>
+<h2>Element use</h2>
+<p>
+    Here you can select which ZZT elements the converter will use. Generally speaking, the more options you give it, the
+    better it will be able to approximate your image- however, if you want to avoid certain elements due to how you plan
+    on using the result, or because those elements visually result in something you do not like, you can turn those off.
+</p>
+<p>
+    At the bottom of the selection are a number of buttons for preset element configurations.
+    'Select all' and 'Deselect all' are self-explanatory. 'Dither only' will select only Empty, Water (Floor in Super
+    ZZT), Solid, Normal and Breakable. 'All gfx' will select all of the graphically useful tile types, avoiding a few
+    tiles that have issues (e.g. they change colours or chars during display, or they aren't handled properly by the
+    converter).
+</p>
+<p>
+    Note that all the elements used here are <b>statless</b>, and they will therefore not contribute towards the board
+    stat limit. If you want to make use of stats, that is handled separately, though the 'Max Stats' parameter.
+</p>
+<p>
+    The performance of the converter will be affected by the number of elements you have selected (unless the 'Max
+    Stats' parameter is set to something other than 0), as the more elements the optimiser has to choose from, the more
+    work it will need to do.
+</p>
+<p>
+    Some elements are not recommended, or some with some caveats:
+</p>
+<ul>
+    <li><b>Transporter, Object</b>: Without stats these elements are invisible, so there is no point in using them.</li>
+    <li><b>Star, Clockwise, Counter, SpinningGun</b>: These elements use inconsistent characters (and in the case of
+    star, inconsistent colours) which will change as parts of the screen get refreshed, and are typically not suitable
+    for ZZT art.</li>
+    <li><b>Line, Web</b>: These elements are not handled properly by the converter- the converter, which only operates
+    on one tile at a time, is unable to optimise based on tiles that are affected by surrounding tiles as these are.</li>
+    <li><b>Scroll, blinking text (and possibly others)</b>: These will cause ZZT to crash or behave oddly if touched,
+    so they should only be used if well out of reach of the player. Other elements may also have undesirable effects if
+    touched as well.</li>
+</ul>
+<h2>Max stats</h2>
+<p>
+    This setting allows you to set the maximum amount of stat objects that will be used to allow the converter to
+    better approximate certain characters. Stats count towards the board total and will also result in increased memory
+    use compared to regular elements, so it is recommended that these be used sparingly.
+</p>
+<p>
+    The converter will always use objects for this setting, irrespective of the 'element use' settings. This is because
+    objects are the most optimal way of representing any char/colour pair with a single stat.
+</p>
+<p>
+    If 'Max Stats' is set to anything other than 0, conversion performance will be seriously reduced. This is due to the
+    way the conversion process works. Rather than simply finding the best element/colour combination of every tile, the
+    converter will also find the best char/colour combination. After all of the tiles have been converted to one of the
+    selected elements, the converter will then choose the tile that would result in the greatest reduction of RMSE if it
+    were replaced with an object. The converter will continue replacing the tiles that would result in the most
+    improvement until either it exhausts the 'Max Stats' value or none of the remaining tiles can be improved. As a
+    result, there is a negligible performance penalty from increasing the 'Max Stats' past 1- most of the performance is
+    lost from the initial global optimisation. It is therefore suggested that you tune the other parameters with 'Max
+    stats' set to 0, and when you are happy with that, put in the maximum number of stats you are happy to expend.
+</p>
+<h2>Other notes</h2>
+<p>
+    The image converter is multithreaded and will benefit from additional CPU cores, due to the optimisation happening
+    character at a time. This does, however, mean that the converter is unable to consider how characters can affect the
+    visual perception of neighbouring characters (the principle behind error diffusion and many other quantisation
+    approaches), which means there are bounds on how good the results can be. Note that you can interrupt the conversion
+    by changing settings at any time- you do not need to wait for the conversion to complete.
+</p>
+<p>
+    After the conversion is done and you are happy with it, clicking the 'OK' button will result in the convert image
+    dialog disappearing and you will be able to place the newly-converted image on the board by pressing enter. You can
+    also store the image in an extended buffer by pressing Ctrl-(0-9).
+</p>
+<a name="Misc"></a><h1>Other miscellaneous info</h1>
+<ul>
+    <li>
+        Holding shift while pressing a directional arrow key will switch boards to the board linked in that direction.
+    </li>
+    <li>
+        Holding ctrl-shift while pressing a directional arrow will do the same thing, unless there is no board linked in
+        that direction. In that event, the 'Add new board' dialog will pop up, and the newly created board will
+        automatically be reciprocally linked to the board you were on before in that direction.
+    </li>
+    <li>
+        Home and end keys can be used to quickly jump to the top-left and bottom-right of the board. This also works
+        in the colour and character select screens.
+    </li>
+    <li>
+        When in the character selection screen (for selecting an object or text element's char), you can type in
+        a character to jump to it immediately.
+    </li>
+</ul>
+<a name="FutureWork"></a><h1>Future work</h1>
+<p>
+    This is a small wish list for features to go into future versions of Zedit2. Some of these are small things that
+    would be easy to implement but are low priority. Others are 'nice to have's that may have significant issues
+    getting in the way of their implementation.
+</p>
+<ul>
+    <li>
+        Support for loading and saving of MZM files. This is a file format from
+        <a href="https://www.digitalmzx.com/">MegaZeux</a> that is suitable for holding blocks of tiles.
+    </li>
+    <li>
+        Ability to configure the screenshot save location and filename. These are already configurable, but the
+        configuration screen doesn't have settings for them yet.
+    </li>
+    <li>
+        Some form of support for editing layers. This is a feature Dr Dos has mentioned as a useful feature before- it's
+        just a matter of scoping exactly what is required here.
+    </li>
+    <li>
+        Some ability to configure the limits shown for various warnings. With the
+        <a href="https://github.com/asiekierka/reconstruction-of-zzt">Reconstruction of ZZT</a>, modified versions and
+        source ports that do not have the same limits as traditional ZZT may become relevant.
+    </li>
+    <li>
+        Some ability to store the loaded palette/charset/blink setting in the ZZT file itself so these do not need to be
+        loaded each time.
+    </li>
+    <li>
+        A feature that will take screenshots of every board in a world automatically and store them in a directory.
+    </li>
+    <li>
+        Some advanced world querying tools, perhaps similar to those used in the
+        <a href="https://museumofzzt.com/">Museum</a> (e.g. being able to search every object's code would be very
+        useful for development.
+    </li>
+    <li>
+        Some advanced world-modifying tools. A global object size optimiser (rewrite labels and flags to be shorter,
+        remove unnecessary line breaks and comments, replace #end with \0 etc.) would be nice, for example.
+    </li>
+    <li>
+        Some kind of external plugin or scripting language support. There are a lot of things that are just much easier
+        to do programmatically when designing a ZZT world and this may be one way of supporting these.
+    </li>
+    <li>
+        Being able to flood-fill 2D patterns would be nice.
+    </li>
+    <li>
+        Support for some kind of non-standard file format...
+        <ul>
+            <li>...that would support world that can't be stored in the ZZT file format (e.g. objects with 100kb of
+            code, more than 255 boards etc.)</li>
+            <li>...that are human-readable or easier to create tools for, e.g. JSON, XML.</li>
+        </ul>
+    </li>
+    <li>
+        Support for a full-screen editing mode that is better than simply maximising the window.
+    </li>
+    <li>
+        Ability to import/export files form the code editor. Currently you can copy and paste the text between programs,
+        but as Zedit2 works in CP437-converted-to-Unicode compatibility may not be the best.
+    </li>
+    <li>
+        Use the currently loaded character set in the code editor and other places where the CP437 font is used. It
+        seems that only vector fonts are supported by Swing so there may not be any easy way of doing this, but it would
+        be nice.
+    </li>
+    <li>
+        Improve the image converter to better consider the global effect of tiles on the visual perception of the image.
+        At the moment it essentially does a local optimisation per tile.
+    </li>
+    <li>
+        Improve performance, especially of general editing while in atlas mode (especially when zoomed out so large
+        portions of the screen are visible at once.)
+    </li>
+    <li>
+        There are some hugely inefficient things  Zedit2 does, such as resorting all stats whenever anything relating to
+        a stat is changed, but these have mostly been ignored as they do not appear to have a large contribution to
+        Zedit2's performance problems.
+    </li>
+    <li>
+        Better custom keystroke handling. At the moment only one key combo can be associated with each command and each
+        command can only have one key combo associated with it. This should basically all be handled in a more
+        intelligent way.
+    </li>
+    <li>
+        The config file should have its entries sorted so that the file is human-editable.
+    </li>
+    <li>
+        This help file should have search support.
+    </li>
+</ul>
+<a name="Acknowledgements"></a><h1>Acknowledgements</h1>
+<ul>
+    <li>
+        <b>Dr Dos</b> for creating Worlds of ZZT and the <a href="https://museumofzzt.com/">Museum of ZZT</a>, which,
+        more than  simply being a fantastic resource for ZZT, was also instrumental in bringing about a community
+        revival without which this software would not exist.
+    </li>
+    <li>
+        <b>asie</b> for <a href="http://zeta.asie.pl/">Zeta</a> and the
+        <a href="https://github.com/asiekierka/reconstruction-of-zzt">Reconstruction of ZZT</a>.
+    </li>
+    <li>
+        <b>KKairos</b> for acting as an excellent sounding board for ideas and features.
+    </li>
+    <li>
+        <b>SaxxonPike, Kev Vance, WiL and David Hammond</b> for the Super ZZT info found at
+        <a href="http://www.shikadi.net/moddingwiki/ZZT_Format">http://www.shikadi.net/moddingwiki/ZZT_Format</a>.
+    </li>
+    <li>
+        <b>VileR</b> for the CP437 font:
+        (<a href="https://int10h.org/oldschool-pc-fonts/readme/">https://int10h.org/oldschool-pc-fonts/readme/</a>)
+    </li>
+    <li><b>Various members of the Worlds of ZZT Discord</b></li>
+    <li><b>Tim Sweeney</b> who seems to be related to this entire mess in some way or another, I can't quite remember...</li>
+</ul>
+<a name="Changelog"></a><h1>Changelog</h1>
+<h2>v0.38</h2>
+<ul>
+    <li>Released under the MIT license.</li>
+</ul>
+<h2>v0.37</h2>
+<ul>
+    <li>Now always prompts when attempting to close a world, whether it needs saving or not. There is a new PROMPT_ON_CLOSE config option (currently not exposed via Settings) that can be set to false to disable this behaviour. (thanks DeadPhrog.)</li>
+    <li>ZZT high score files with the same name as the test world (with a .HI extension for ZZT or a .HGS extension for Super ZZT) will be deleted when the test world is.</li>
+</ul>
+<h2>v0.36</h2>
+<ul>
+    <li>Added warning before using blinking text / grey text and other elements in that range that call uninitialised function pointers in ZZT (thanks WiL.)</li>
+</ul>
+<h2>v0.35</h2>
+<ul>
+    <li>Flood fill now considers statted vs non-statted elements (thanks TheGreenHerring.)</li>
+</ul>
+<h2>v0.34</h2>
+<ul>
+    <li>Added config option to disable syntax highlighting in the code editor (thanks DarkMatt.)</li>
+</ul>
+<h2>v0.33</h2>
+<ul>
+    <li>Added 'Import boards' option to Board menu. Allows you to import multiple .BRD files. If the boards are numbered, they
+        will be imported to that board #.</li>
+    <li>Added 'Export boards' button to the board list. This will export boards, giving them filenames based on their board #s.</li>
+    <li>The insert char action in the code editor will now insert a number if the cursor is directly after the text '#char ' (thanks DarkMatt)</li>
+</ul>
+<h2>v0.32</h2>
+<ul>
+    <li>Fixed bug where indented text not preceded on line by command would have incorrect max length highlighting (thanks CJA.)</li>
+</ul>
+<h2>v0.31</h2>
+<ul>
+    <li>Fixed bug related to move block / flip block / mirror block operations (thanks DeadPhrog.)</li>
+    <li>Possibly(?) fixed bug related to losing window focus? (thanks DeadPhrog.)</li>
+    <li>Added command to remove current board from atlas (thanks DeadPhrog.)</li>
+</ul>
+<h2>v0.30</h2>
+<ul>
+    <li>Pressing space over a tile when you have the same tile in your buffer now deletes it (thanks Anna Anthropy.)</li>
+</ul>
+<h2>v0.29</h2>
+<ul>
+    <li>Fixed a bug where clearing a keybind would stop all keybinds from working (thanks DarkMatt.)</li>
+    <li>Board name editing field now limits the board name length and shows the current and maximum lengths (thanks DarkMatt.)</li>
+    <li>The live preview during image conversion no longer slows the entire process down quite as much as it did. Converting really large images (e.g. massive Super ZZT multi-board atlases) won't be quick, but it is at least a little more feasible now. Also added an option to disable the live preview, which may be useful when converting really big images.</li>
+    <li>Fixed a bug where image conversion default tile types would not be set correctly</li>
+</ul>
+<h2>v0.28</h2>
+<ul>
+    <li>Fixed a bug introduced by using 'Erase player from board' on board where the player is already erased (thanks TheGreenHerring.)</li>
+</ul>
+<h2>v0.27</h2>
+<ul>
+    <li>Added 'Add boards (*x* grid)' command to editor.</li>
+    <li>Added 'Erase player from board' command.</li>
+    <li>Prevented the Fancy Fill dialog from putting all its previews into the undo buffer.</li>
+</ul>
+<h2>v0.26</h2>
+<ul>
+    <li>Added Grey Text to the lineup of crashy text colours (thanks TheGreenHerring.)</li>
+</ul>
+<h2>v0.25</h2>
+<ul>
+    <li>Added Ctrl-X to swap buffer foreground and background colours (thanks JohnWWells.)</li>
+</ul>
+<h2>v0.24</h2>
+<ul>
+    <li>Fixed score and energizer cycles being swapped in Super ZZT worlds (thanks verasev.)</li>
+</ul>
+<h2>v0.23</h2>
+<ul>
+    <li>Fixed the key combo for 'show empties as text' (thanks TheGreenHerring.)</li>
+    <li>Added support for using AltGr for key combos involving Alt (thanks DarkMatt.)</li>
+</ul>
+<h2>v0.22</h2>
+<ul>
+    <li>Added 'show fakes' (thanks CJA.)</li>
+    <li>Added undo support. CURRENTLY EXPERIMENTAL, pls test.</li>
+</ul>
+<h2>v0.21</h2>
+<ul>
+    <li>Music transposition no longer includes drums and rests (thanks WiL.)</li>
+</ul>
+<h2>v0.20</h2>
+<ul>
+    <li>Fixed duplicate line in code editor to work on the last line</li>
+    <li>Fixed bug where attempting to edit a tile with the standard editor throws an exception if the stat has out of range params</li>
+    <li>Selecting a stat in the advanced editor now scrolls the stat list to it</li>
+    <li>Added ability to switch between stats with PgUp/PgDn in advanced editor</li>
+    <li>You can put &lt;&lt;field&gt;&gt; into config paths and these will be replaced with <pre>System.getProperty("field");</pre>
+        before being evaluated as paths. I find this useful with e.g. &lt;&lt;user.home&gt;&gt; to reference my home dir when using
+        ZEdit2 on multiple machines. A list of Java system properties can be found
+        <a href="https://docs.oracle.com/javase/tutorial/essential/environment/sysprop.html" target="_blank" />here</a>.</li>
+    <li>Fixed bug where the milliseconds before key injection could not be configured (thanks The Green Herring.)</li>
+</ul>
+<h2>v0.19</h2>
+<ul>
+    <li>Music transposition preserves old note capitalisation</li>
+</ul>
+<h2>v0.18</h2>
+<ul>
+    <li>Added music transposition feature (suggested by WiL)</li>
+    <li>Added music selection play feature (suggested by Zephyr)</li>
+</ul>
+<h2>v0.17</h2>
+<ul>
+    <li>Fixed bug where changing the instruction ptr of a stat without changing anything else would not register the change.</li>
+</ul>
+<h2>v0.16</h2>
+<ul>
+    <li>Fixed bug where ZZT/SZZT-specific board attribs (e.g. dark, camera, message) were not being imported with Import Board; thanks The Green Herring.</li>
+</ul>
+<h2>v0.15</h2>
+<ul>
+    <li>Fixed bug where stat order could not be set to a negative number</li>
+    <li>Fixed label of Gems counter in global settings</li>
+    <li>Added hotkeys (Alt-I and Alt-X) for importing/exporting boards</li>
+    <li>Fixed bug where '#become' and '#put [dir]' commands without an element argument were incorrectly marked as invalid ZZT-OOP</li>
+    <li>Fixed bug where commands that take a direction weren't marked as invalid when no direction was supplied</li>
+    <li>Fixed bug where setting flag from Global Options would use the world name instead</li>
+</ul>
+<h2>v0.14</h2>
+<ul>
+    <li>Fixed setting stat cycle</li>
+</ul>
+<h2>v0.13</h2>
+<ul>
+    <li>Pressing escape to close the editor closing prompt no longer exits the editor</li>
+    <li>Added RNDNS to the syntax highlighter</li>
+</ul>
+<h2>v0.12</h2>
+<ul>
+    <li>Fixed show ______ functionality in atlas mode</li>
+    <li>Removed pointless scrollpane from convert image</li>
+    <li>Fixed screenshot in help file</li>
+</ul>
+<h2>v0.11</h2>
+<ul>
+    <li>Fixed hotkey for board list (thanks The Green Herring)</li>
+    <li>Fixed bug with placing a tile via F-menu while in atlas mode</li>
+    <li>Slime gradient fill no longer counts board edges</li>
+</ul>
+<h2>v0.1</h2>
+<ul>
+    <li>Initial release</li>
+</ul>
+
+</body>
+</html>
