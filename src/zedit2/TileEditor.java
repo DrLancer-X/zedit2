@@ -15,6 +15,7 @@ import java.util.List;
 import static zedit2.Util.keyMatches;
 
 public class TileEditor {
+    private final boolean editExempt;
     private int selected;
     private WorldEditor editor;
     private Tile tile, originalTile;
@@ -48,13 +49,14 @@ public class TileEditor {
     //  New   | StepY  | Follower| Code   |
     //          Cycle    Leader    Order
 
-    public TileEditor(WorldEditor editor, Board board, Tile inputTile, List<Stat> stats, TileEditorCallback callback, int x, int y, boolean advanced, int selected) {
+    public TileEditor(WorldEditor editor, Board board, Tile inputTile, List<Stat> stats, TileEditorCallback callback, int x, int y, boolean advanced, int selected, boolean editExempt) {
         internalTagTracker++;
         this.callback = callback;
         this.editor = editor;
         this.board = board;
         this.advanced = advanced;
         this.selected = selected;
+        this.editExempt = editExempt;
         tileX = x;
         tileY = y;
         if (inputTile == null) {
@@ -375,7 +377,7 @@ public class TileEditor {
         ColourSelector.createColourSelector(editor, currentStat.getP1(), relativeFrame(), e -> {
             currentStat.setP1(Integer.parseInt(e.getActionCommand()));
             // If this is a buffer object, don't open the code editor
-            if (tileX == -1 && tileY == -1) {
+            if (tileX == -1 && tileY == -1 && !editExempt) {
                 callback.callback(tile);
                 return;
             }
@@ -390,7 +392,7 @@ public class TileEditor {
     }
     private void editorScroll() {
         // If this is a buffer object, don't open the editor
-        if (tileX == -1 && tileY == -1) return;
+        if (tileX == -1 && tileY == -1 && !editExempt) return;
         codeEditor(currentStat, e -> {
             var source = (CodeEditor) e.getSource();
 
@@ -850,7 +852,7 @@ public class TileEditor {
             } else {
                 boolean readOnly = false;
                 String caption;
-                if (tileX == -1 && tileY == -1) {
+                if (tileX == -1 && tileY == -1 && !editExempt) {
                     // Buffer stats get a readonly code editor
                     readOnly = true;
                     caption = String.format("Viewing code of s%s (This stat exists only in the buffer. Editing disabled.)", txt);

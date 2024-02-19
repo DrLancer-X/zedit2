@@ -1336,7 +1336,7 @@ public class WorldEditor implements KeyActionReceiver, KeyListener, WindowFocusL
         if (!isValidTile(tile)) return;
 
         if (editOnPlace) {
-            openTileEditor(tile, currentBoard, -1, -1, this::elementPlaceAtCursor, false);
+            openTileEditorExempt(tile, currentBoard, -1, -1, this::elementPlaceAtCursor, false);
         } else {
             elementPlaceAtCursor(tile);
         }
@@ -2987,12 +2987,16 @@ public class WorldEditor implements KeyActionReceiver, KeyListener, WindowFocusL
 
     private void openTileEditor(Tile tile, Board board, int x, int y, TileEditorCallback callback, boolean advanced)
     {
-        new TileEditor(this, board, tile, null, callback, x, y, advanced, -1);
+        new TileEditor(this, board, tile, null, callback, x, y, advanced, -1, false);
+    }
+    private void openTileEditorExempt(Tile tile, Board board, int x, int y, TileEditorCallback callback, boolean advanced)
+    {
+        new TileEditor(this, board, tile, null, callback, x, y, advanced, -1, true);
     }
 
     private void openTileEditor(java.util.List<Stat> stats, Board board, int x, int y, TileEditorCallback callback, boolean advanced, int selected)
     {
-        new TileEditor(this, board, null, stats, callback, x, y, advanced, selected);
+        new TileEditor(this, board, null, stats, callback, x, y, advanced, selected, false);
     }
 
     private void setStats(Board board, int bx, int by, int x, int y, java.util.List<Stat> stats) {
