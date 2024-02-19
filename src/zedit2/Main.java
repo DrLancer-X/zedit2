@@ -6,7 +6,7 @@ import java.io.IOException;
 import javax.swing.*;
 
 public class Main implements Runnable {
-    public static final String VERSION = "0.38";
+    public static final String VERSION = "0.39";
     private static String[] args;
     public static void main(String[] args) {
         //System.setProperty("sun.java2d.opengl", "True");
