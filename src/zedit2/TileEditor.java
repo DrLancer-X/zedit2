@@ -373,6 +373,11 @@ public class TileEditor {
         // Objects get char selector (for P1) followed by code editor
         ColourSelector.createColourSelector(editor, currentStat.getP1(), relativeFrame(), e -> {
             currentStat.setP1(Integer.parseInt(e.getActionCommand()));
+            // If this is a buffer object, don't open the code editor
+            if (tileX == -1 && tileY == -1) {
+                callback.callback(tile);
+                return;
+            }
             codeEditor(currentStat, e1 -> {
                 if (e1.getActionCommand().equals("update")) {
                     var source = (CodeEditor) e1.getSource();
@@ -383,6 +388,8 @@ public class TileEditor {
         }, ColourSelector.CHAR);
     }
     private void editorScroll() {
+        // If this is a buffer object, don't open the editor
+        if (tileX == -1 && tileY == -1) return;
         codeEditor(currentStat, e -> {
             var source = (CodeEditor) e.getSource();
 
@@ -753,8 +760,13 @@ public class TileEditor {
             upd();
         };
         if (stat.getCodeLength() >= 0) {
-            codeButton = new JButton("Edit code (" + stat.getCodeLength() + ")");
-            codeButton.setToolTipText("Edit the code attached to this stat");
+            if (tileX == -1 && tileY == -1) {
+                codeButton = new JButton("View code (" + stat.getCodeLength() + ")");
+                codeButton.setToolTipText("View the code attached to this buffer stat (read-only)");
+            } else {
+                codeButton = new JButton("Edit code (" + stat.getCodeLength() + ")");
+                codeButton.setToolTipText("Edit the code attached to this stat");
+            }
             codeButton.addActionListener(e -> {
                 codeEditor(stat, listener);
             });
@@ -826,7 +838,16 @@ public class TileEditor {
             if (depth > 0) {
                 new CodeEditor(getIcon(), followStat, editor, listener, true, String.format("S%s, bound to stat #%d (read only)", txt, followStat.getStatId()));
             } else {
-                new CodeEditor(getIcon(), followStat, editor, listener, false, String.format("Editing code of s%s", txt));
+                boolean readOnly = false;
+                String caption;
+                if (tileX == -1 && tileY == -1) {
+                    // Buffer stats get a readonly code editor
+                    readOnly = true;
+                    caption = String.format("Viewing code of s%s (This stat exists only in the buffer. Editing disabled.)", txt);
+                } else {
+                    caption = String.format("Editing code of s%s", txt);
+                }
+                new CodeEditor(getIcon(), followStat, editor, listener, readOnly, caption);
             }
         } else {
             JOptionPane.showMessageDialog(relativeFrame(), "Unable to reach this object's code.", "Unable to reach code", JOptionPane.ERROR_MESSAGE);
