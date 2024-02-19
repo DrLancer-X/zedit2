@@ -21,11 +21,11 @@ public class ZZTType extends ZType {
     private static boolean isLineOrEdge(int id) {
         return (id == LINE) || (id == BOARDEDGE);
     }
-    private static Stat getLastStat(Board board, int x, int y)
+    private static Stat getFirstStat(Board board, int x, int y)
     {
         var stats = board.getStatsAt(x, y);
         if (stats.isEmpty()) return null;
-        return stats.get(stats.size() - 1);
+        return stats.get(0);
     }
     public static String getName(int id)
     {
@@ -38,19 +38,19 @@ public class ZZTType extends ZType {
 
         switch (id) {
             case DUPLICATOR: {
-                var lastStat = getLastStat(board, x, y);
+                var lastStat = getFirstStat(board, x, y);
                 if (lastStat == null) break;
                 return duplicatorFrames[lastStat.getP1()];
             }
             case BOMB: {
-                var lastStat = getLastStat(board, x, y);
+                var lastStat = getFirstStat(board, x, y);
                 if (lastStat == null) break;
                 int bombChar = (48 + lastStat.getP1()) & 0xFF;
                 if (bombChar == 48 || bombChar == 49) bombChar = 11;
                 return bombChar;
             }
             case TRANSPORTER: {
-                var lastStat = getLastStat(board, x, y);
+                var lastStat = getFirstStat(board, x, y);
                 if (lastStat == null) break;
                 int xs = lastStat.getStepX();
                 int ys = lastStat.getStepY();
@@ -60,12 +60,12 @@ public class ZZTType extends ZType {
                 return 94; // '^'
             }
             case OBJECT: {
-                var lastStat = getLastStat(board, x, y);
+                var lastStat = getFirstStat(board, x, y);
                 if (lastStat == null) break;
                 return lastStat.getP1();
             }
             case PUSHER: {
-                var lastStat = getLastStat(board, x, y);
+                var lastStat = getFirstStat(board, x, y);
                 if (lastStat == null) break;
                 int xs = lastStat.getStepX();
                 int ys = lastStat.getStepY();
