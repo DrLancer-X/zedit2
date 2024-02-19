@@ -13,6 +13,9 @@ import java.net.URISyntaxException;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.function.BooleanSupplier;
+import java.util.function.Function;
+import java.util.function.Predicate;
 
 public class Util {
 
@@ -231,13 +234,22 @@ public class Util {
     }
 
     public static void addKeyClose(Window window, JComponent inputMapComponent, int keyCode, int modifiers) {
+        addKeyClose(window, inputMapComponent, keyCode, modifiers, () -> true);
+    }
+
+    public static void addPromptedEscClose(Window window, JComponent inputMapComponent, BooleanSupplier confirm) {
+        addKeyClose(window, inputMapComponent, KeyEvent.VK_ESCAPE, 0, confirm);
+    }
+    public static void addKeyClose(Window window, JComponent inputMapComponent, int keyCode, int modifiers, BooleanSupplier confirm) {
         var keyStroke = KeyStroke.getKeyStroke(keyCode, modifiers);
         String act = "key" + keyStroke.hashCode();
         inputMapComponent.getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW).put(keyStroke, act);
         inputMapComponent.getActionMap().put(act, new AbstractAction() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                window.dispose();
+                if (confirm.getAsBoolean()) {
+                    window.dispose();
+                }
             }
         });
     }

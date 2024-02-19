@@ -17,7 +17,7 @@ import static zedit2.Util.keyMatches;
 public class TileEditor {
     private int selected;
     private WorldEditor editor;
-    private Tile tile;
+    private Tile tile, originalTile;
     private boolean szzt;
     private String[] everyType;
     private TileEditorCallback callback;
@@ -70,6 +70,7 @@ public class TileEditor {
         } else {
             tile = inputTile.clone();
         }
+        originalTile = tile.clone();
         szzt = editor.getWorldData().isSuperZZT();
         if (advanced) {
             createAdvancedGUI();
@@ -421,10 +422,19 @@ public class TileEditor {
             return false;
         }
     }
+    private boolean isModified() {
+        return !tile.equals(originalTile);
+    }
 
     private void createGUI() {
         tileEditorFrame = new JDialog();
-        Util.addEscClose(tileEditorFrame, tileEditorFrame.getRootPane());
+        Util.addPromptedEscClose(tileEditorFrame, tileEditorFrame.getRootPane(), () -> {
+            if (isModified()) {
+                int confirm = JOptionPane.showOptionDialog(relativeFrame(), "Are you sure you want to discard changes to this stat?", "Are you sure?", JOptionPane.YES_NO_OPTION, JOptionPane.WARNING_MESSAGE, null, null, null);
+                return confirm != JOptionPane.NO_OPTION;
+            }
+            return true;
+        });
         tileEditorFrame.setModalityType(Dialog.ModalityType.APPLICATION_MODAL);
         tileEditorFrame.setResizable(false);
         tileEditorFrame.setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
